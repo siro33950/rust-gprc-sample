@@ -306,11 +306,13 @@ checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 name = "helloworld-tonic"
 version = "0.1.0"
 dependencies = [
+ "http",
  "prost",
  "tokio",
  "tonic",
  "tonic-build",
  "tonic-web",
+ "tower-http 0.6.2",
 ]
 
 [[package]]
@@ -936,7 +938,7 @@ dependencies = [
  "pin-project",
  "tokio-stream",
  "tonic",
- "tower-http",
+ "tower-http 0.5.2",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -987,6 +989,20 @@ dependencies = [
  "http",
  "http-body",
  "http-body-util",
+ "pin-project-lite",
+ "tower-layer",
+ "tower-service",
+]
+
+[[package]]
+name = "tower-http"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "403fa3b783d4b626a8ad51d766ab03cb6d2dbfc46b1c5d4448395e6628dc9697"
+dependencies = [
+ "bitflags",
+ "bytes",
+ "http",
  "pin-project-lite",
  "tower-layer",
  "tower-service",
