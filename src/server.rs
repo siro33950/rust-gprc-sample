@@ -32,7 +32,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let greeter = MyGreeter::default();
 
     Server::builder()
-        .add_service(GreeterServer::new(greeter))
+        .accept_http1(true) // HTTP/1.1リクエストを受け付ける
+        .add_service(tonic_web::enable(GreeterServer::new(greeter))) // tonic_webを有効にする
         .serve(addr)
         .await?;
 
