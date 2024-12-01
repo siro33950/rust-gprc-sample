@@ -1,0 +1,69 @@
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@5.1.1
+
+executors:
+  # Crossでのビルド時、Dockerを使うと設定が面倒なのでLinuxを使う
+  executor:
+    machine:
+      image: ubuntu-2204:current
+      resource_class: medium
+
+commands:
+  install-protoc:
+    steps:
+      - run:
+          name: "Install protoc"
+          command: |
+            if ! [ -f /usr/bin/protoc ]; then
+              sudo apt-get update
+              sudo apt-get install -y protobuf-compiler
+            fi
+
+  install-rust-and-cargo-make:
+    steps:
+      - run:
+          name: "Install Rust and Cargo Make"
+          command: |
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source $HOME/.cargo/env
+            cargo install cargo-make
+
+  install-ecs-deploy:
+    steps:
+      - run:
+          name: "Install ecs-deploy"
+          command: |
+            latest=$(curl -s 'https://api.github.com/repos/silinternational/ecs-deploy/tags' | jq -r '.[].name' | head -1 || true)
+            curl -s https://raw.githubusercontent.com/silinternational/ecs-deploy/${latest}/ecs-deploy > ~/bin/ecs-deploy
+            chmod +x ~/bin/ecs-deploy
+
+jobs:
+  deploy:
+    executor: executor
+    environment:
+      aws_access_key_id: $AWS_ACCESS_KEY_ID
+      aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+    steps:
+      - checkout
+      - install-protoc
+      - install-rust-and-cargo-make
+      - run:
+          name: "Run cargo install cross"
+          command: cargo install cross
+      - run:
+          name: "Run cargo make build"
+          command: cargo make build
+      - aws-cli/install
+      - aws-cli/setup
+      - install-ecs-deploy
+      - setup_remote_docker
+      - run:
+          name: "Run cargo make deploy"
+          command: cargo make deploy
+
+workflows:
+  build-workflow:
+    jobs:
+      - deploy:
+          context: helloworld
