@@ -1,0 +1,16 @@
+[tasks.run]
+description = "Build the project."
+command = "cargo"
+args = [
+  "run",
+  "--bin", "helloworld-server"
+]
+
+[tasks.build]
+description = "Build the project for Linux target using Docker"
+command = "cross"
+args = [
+    "build",
+    "--bin", "helloworld-server",
+    "--target", "x86_64-unknown-linux-gnu"
+]

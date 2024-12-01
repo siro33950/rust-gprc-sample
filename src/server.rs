@@ -33,6 +33,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "[::1]:50051".parse()?;
     let greeter = MyGreeter::default();
 
+    // Create HealthReporter
+    let (mut health_reporter, health_service) = tonic_health::server::health_reporter();
+    health_reporter
+        .set_serving::<GreeterServer<MyGreeter>>()
+        .await;
+
     // CORS設定
     let cors_layer = CorsLayer::new()
         .allow_origin(AllowOrigin::list(vec!["localhost:3000".parse().unwrap()]))
@@ -44,8 +50,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Server::builder()
         .accept_http1(true)
-        .layer(cors_layer) // CORS設定を適用
+        .layer(cors_layer)
         .add_service(tonic_web::enable(GreeterServer::new(greeter)))
+        .add_service(health_service) // HealthServiceを追加. tonic-webを有効にするとエラーになるので注意
         .serve(addr)
         .await?;
 
